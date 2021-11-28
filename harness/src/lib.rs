@@ -9,7 +9,7 @@ fn entry(binding: &mut GDExtensionBinding) {
 
     binding.set_core_initializer(
         |interface: &GDNativeInterface,
-         library: &GDNativeExtensionClassLibraryPtr,
+         library: GDNativeExtensionClassLibraryPtr,
          userdata: *mut c_void| unsafe {
             let b = Box::from_raw(userdata as *mut &str);
             println!("hi core {}", b);
@@ -17,7 +17,7 @@ fn entry(binding: &mut GDExtensionBinding) {
     );
     binding.set_core_finalizer(
         |interface: &GDNativeInterface,
-         library: &GDNativeExtensionClassLibraryPtr,
+         library: GDNativeExtensionClassLibraryPtr,
          userdata: *mut c_void| {
             println!("bye core");
         },
@@ -25,14 +25,14 @@ fn entry(binding: &mut GDExtensionBinding) {
 
     binding.set_servers_initializer(
         |interface: &GDNativeInterface,
-         library: &GDNativeExtensionClassLibraryPtr,
+         library: GDNativeExtensionClassLibraryPtr,
          userdata: *mut c_void| {
             println!("hi servers");
         },
     );
     binding.set_servers_finalizer(
         |interface: &GDNativeInterface,
-         library: &GDNativeExtensionClassLibraryPtr,
+         library: GDNativeExtensionClassLibraryPtr,
          userdata: *mut c_void| {
             println!("bye servers");
         },
@@ -40,14 +40,14 @@ fn entry(binding: &mut GDExtensionBinding) {
 
     binding.set_scene_initializer(
         |interface: &GDNativeInterface,
-         library: &GDNativeExtensionClassLibraryPtr,
+         library: GDNativeExtensionClassLibraryPtr,
          userdata: *mut c_void| {
             println!("hi scene");
         },
     );
     binding.set_scene_finalizer(
         |interface: &GDNativeInterface,
-         library: &GDNativeExtensionClassLibraryPtr,
+         library: GDNativeExtensionClassLibraryPtr,
          userdata: *mut c_void| {
             println!("bye scene");
         },
@@ -55,14 +55,14 @@ fn entry(binding: &mut GDExtensionBinding) {
 
     binding.set_editor_initializer(
         |interface: &GDNativeInterface,
-         library: &GDNativeExtensionClassLibraryPtr,
+         library: GDNativeExtensionClassLibraryPtr,
          userdata: *mut c_void| {
             println!("hi editor");
         },
     );
     binding.set_editor_finalizer(
         |interface: &GDNativeInterface,
-         library: &GDNativeExtensionClassLibraryPtr,
+         library: GDNativeExtensionClassLibraryPtr,
          userdata: *mut c_void| {
             println!("bye editor");
         },
@@ -70,14 +70,14 @@ fn entry(binding: &mut GDExtensionBinding) {
 
     binding.set_driver_initializer(
         |interface: &GDNativeInterface,
-         library: &GDNativeExtensionClassLibraryPtr,
+         library: GDNativeExtensionClassLibraryPtr,
          userdata: *mut c_void| {
             println!("hi driver");
         },
     );
     binding.set_driver_finalizer(
         |interface: &GDNativeInterface,
-         library: &GDNativeExtensionClassLibraryPtr,
+         library: GDNativeExtensionClassLibraryPtr,
          userdata: *mut c_void| {
             println!("bye driver");
         },

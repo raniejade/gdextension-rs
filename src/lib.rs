@@ -10,17 +10,9 @@ pub struct GDNativeInterface {
     ptr: *const glue::GDNativeInterface,
 }
 
-pub struct GDNativeExtensionClassLibraryPtr {
-    ptr: glue::GDNativeExtensionClassLibraryPtr,
-}
+pub type GDNativeExtensionClassLibraryPtr = glue::GDNativeExtensionClassLibraryPtr;
 
-pub type GDLevelCallback = fn(&GDNativeInterface, &GDNativeExtensionClassLibraryPtr, *mut c_void);
-
-impl GDNativeExtensionClassLibraryPtr {
-    fn new(ptr: glue::GDNativeExtensionClassLibraryPtr) -> Self {
-        GDNativeExtensionClassLibraryPtr { ptr }
-    }
-}
+pub type GDLevelCallback = fn(&GDNativeInterface, GDNativeExtensionClassLibraryPtr, *mut c_void);
 
 impl GDNativeInterface {
     fn new(ptr: *const glue::GDNativeInterface) -> Self {
@@ -102,7 +94,7 @@ impl GDExtensionBinding {
             initializers: self.initializers,
             finalizers: self.finalizers,
             interface: GDNativeInterface::new(sys::interface),
-            library: GDNativeExtensionClassLibraryPtr::new(sys::library),
+            library: sys::library,
         });
         return 1;
     }
@@ -183,7 +175,7 @@ unsafe extern "C" fn initialize_level(
 ) {
     let state = binding_state.as_ref().expect("binding state not set");
     match state.initializers.get(&level) {
-        Some(cb) => cb(&state.interface, &state.library, userdata),
+        Some(cb) => cb(&state.interface, state.library, userdata),
         None => {}
     }
 }
@@ -194,7 +186,7 @@ unsafe extern "C" fn finalize_level(
 ) {
     let state = binding_state.as_ref().expect("binding state not set");
     match state.finalizers.get(&level) {
-        Some(cb) => cb(&state.interface, &state.library, userdata),
+        Some(cb) => cb(&state.interface, state.library, userdata),
         None => {}
     }
 }
