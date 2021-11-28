@@ -1,11 +1,12 @@
 [package]
-name = "gdextension-rs"
+name = "harness"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+gdextension-rs = { path = "../" }
 
-[build-dependencies]
-bindgen = "0.59.2"
+[lib]
+crate-type = ["dylib"]
