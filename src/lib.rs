@@ -18,13 +18,40 @@ mod sys {
 
 pub type GDNativeExtensionClassLibraryPtr = *mut c_void;
 
-pub struct GDNativeInterface {
-    ptr: *const glue::GDNativeInterface,
-}
+pub struct GDNativeInterface;
 
 impl GDNativeInterface {
-    fn new(ptr: *const glue::GDNativeInterface) -> Self {
-        GDNativeInterface { ptr }
+    pub fn print_error(description: &str, function: &str, file: &str, line_number: i32) {
+        unsafe {
+            (*sys::interface).print_error.unwrap()(
+                description.as_ptr() as _,
+                function.as_ptr() as _,
+                file.as_ptr() as _,
+                line_number,
+            );
+        }
+    }
+
+    pub fn print_warning(description: &str, function: &str, file: &str, line_number: i32) {
+        unsafe {
+            (*sys::interface).print_warning.unwrap()(
+                description.as_ptr() as _,
+                function.as_ptr() as _,
+                file.as_ptr() as _,
+                line_number,
+            );
+        }
+    }
+
+    pub fn print_script_error(description: &str, function: &str, file: &str, line_number: i32) {
+        unsafe {
+            (*sys::interface).print_script_error.unwrap()(
+                description.as_ptr() as _,
+                function.as_ptr() as _,
+                file.as_ptr() as _,
+                line_number,
+            );
+        }
     }
 }
 

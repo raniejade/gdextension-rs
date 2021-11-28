@@ -7,6 +7,8 @@ fn entry(binding: &mut GDExtensionBinding) {
     let s = Box::into_raw(Box::new("Hello"));
     binding.set_userdata(s as *mut c_void);
 
+    GDNativeInterface::print_error("some error", "foo_bar", "bar.java", 45);
+
     binding.set_core_initializer(|userdata: *mut c_void| unsafe {
         let b = Box::from_raw(userdata as *mut &str);
         println!("hi core {}", b);
