@@ -3,61 +3,15 @@ use std::ffi::c_void;
 use std::os::raw::c_uint;
 use std::ptr::null_mut;
 
-pub mod glue;
-mod sys;
+// re-exports
+pub use interface::*;
 
-pub struct GDNativeInterface {
-    ptr: *const glue::GDNativeInterface,
-}
+pub mod glue;
+mod interface;
 
 pub type GDNativeExtensionClassLibraryPtr = glue::GDNativeExtensionClassLibraryPtr;
 
 pub type GDLevelCallback = fn(&GDNativeInterface, GDNativeExtensionClassLibraryPtr, *mut c_void);
-
-impl GDNativeInterface {
-    fn new(ptr: *const glue::GDNativeInterface) -> Self {
-        GDNativeInterface { ptr }
-    }
-
-    pub fn print_error(&self, description: &str, function: &str, file: &str, line_number: i32) {
-        unsafe {
-            (*self.ptr).print_error.unwrap()(
-                description.as_ptr() as _,
-                function.as_ptr() as _,
-                file.as_ptr() as _,
-                line_number,
-            );
-        }
-    }
-
-    pub fn print_warning(&self, description: &str, function: &str, file: &str, line_number: i32) {
-        unsafe {
-            (*self.ptr).print_warning.unwrap()(
-                description.as_ptr() as _,
-                function.as_ptr() as _,
-                file.as_ptr() as _,
-                line_number,
-            );
-        }
-    }
-
-    pub fn print_script_error(
-        &self,
-        description: &str,
-        function: &str,
-        file: &str,
-        line_number: i32,
-    ) {
-        unsafe {
-            (*self.ptr).print_script_error.unwrap()(
-                description.as_ptr() as _,
-                function.as_ptr() as _,
-                file.as_ptr() as _,
-                line_number,
-            );
-        }
-    }
-}
 
 struct BindingState {
     initializers: HashMap<c_uint, GDLevelCallback>,
@@ -69,14 +23,24 @@ struct BindingState {
 static mut binding_state: Option<BindingState> = None;
 
 pub struct GDExtensionBinding {
+    interface: *const glue::GDNativeInterface,
+    library: glue::GDNativeExtensionClassLibraryPtr,
+    initialization: *mut glue::GDNativeInitialization,
     initializers: HashMap<c_uint, GDLevelCallback>,
     finalizers: HashMap<c_uint, GDLevelCallback>,
     userdata: *mut c_void,
 }
 
 impl GDExtensionBinding {
-    fn new() -> Self {
+    fn new(
+        interface: *const glue::GDNativeInterface,
+        library: glue::GDNativeExtensionClassLibraryPtr,
+        initialization: *mut glue::GDNativeInitialization,
+    ) -> Self {
         GDExtensionBinding {
+            interface,
+            library,
+            initialization,
             initializers: HashMap::new(),
             finalizers: HashMap::new(),
             userdata: null_mut(),
@@ -84,17 +48,17 @@ impl GDExtensionBinding {
     }
 
     unsafe fn init(self) -> glue::GDNativeBool {
-        (*sys::initialization).minimum_initialization_level =
+        (*self.initialization).minimum_initialization_level =
             glue::GDNativeInitializationLevel_GDNATIVE_MAX_INITIALIZATION_LEVEL;
-        (*sys::initialization).initialize = Some(initialize_level);
-        (*sys::initialization).deinitialize = Some(finalize_level);
-        (*sys::initialization).userdata = self.userdata;
+        (*self.initialization).initialize = Some(initialize_level);
+        (*self.initialization).deinitialize = Some(finalize_level);
+        (*self.initialization).userdata = self.userdata;
 
         binding_state = Some(BindingState {
             initializers: self.initializers,
             finalizers: self.finalizers,
-            interface: GDNativeInterface::new(sys::interface),
-            library: sys::library,
+            interface: GDNativeInterface::new(self.interface),
+            library: self.library,
         });
         return 1;
     }
@@ -197,10 +161,7 @@ pub unsafe fn init(
     initialization: *mut glue::GDNativeInitialization,
     entry: fn(&mut GDExtensionBinding),
 ) -> glue::GDNativeBool {
-    sys::interface = interface;
-    sys::library = library;
-    sys::initialization = initialization;
-    let mut binding = GDExtensionBinding::new();
+    let mut binding = GDExtensionBinding::new(interface, library, initialization);
     entry(&mut binding);
     return binding.init();
 }
