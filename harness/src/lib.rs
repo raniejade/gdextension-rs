@@ -11,6 +11,7 @@ fn entry(binding: &mut GDExtensionBinding) {
         |interface: &GDNativeInterface,
          library: GDNativeExtensionClassLibraryPtr,
          userdata: *mut c_void| unsafe {
+            println!("Godot version: {}", interface.get_version());
             let b = Box::from_raw(userdata as *mut &str);
             println!("hi core {}", b);
         },
